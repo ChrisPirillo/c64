@@ -439,6 +439,12 @@
             inputLineEl.remove();
         }
 
+        // Remove a leftover blank placeholder line at the end so the
+        // new input line appears directly after READY.
+        if (outputEl.lastChild && outputEl.lastChild.dataset && outputEl.lastChild.dataset.blank) {
+            outputEl.removeChild(outputEl.lastChild);
+        }
+
         inputLineEl = document.createElement('p');
         promptEl = document.createElement('span');
         promptEl.textContent = promptText;
