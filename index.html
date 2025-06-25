@@ -350,6 +350,9 @@
                 .replace(/NOT\s+/gi, ' !')
                 .replace(/<>/g, '!=');
 
+            // Convert BASIC equality operator to JavaScript
+            finalExpr = finalExpr.replace(/(^|[^<>!=])=([^=])/g, '$1==$2');
+
             // To make c64funcs accessible in the new Function's scope,
             // replace C64 function calls like RND(1) with _c64.RND(1)
             // and pass the c64funcs object as an argument to the generated function.
