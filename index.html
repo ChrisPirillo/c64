@@ -161,7 +161,8 @@
     const breakButton = document.getElementById('break-button');
     const crtContainer = document.querySelector('.crt-container');
     
-    let inputLineEl, promptEl, inputBufferEl, cursorEl;
+    let inputLineEl, promptEl, inputBeforeEl, inputAfterEl, cursorEl;
+    let cursorPos = 0;
     let program = {};
     let variables = {};
     let memory = {};
@@ -442,17 +443,21 @@
         inputLineEl = document.createElement('p');
         promptEl = document.createElement('span');
         promptEl.textContent = promptText;
-        inputBufferEl = document.createElement('span');
+        inputBeforeEl = document.createElement('span');
+        inputAfterEl = document.createElement('span');
         cursorEl = document.createElement('span');
         cursorEl.className = 'cursor'; // Apply cursor blink animation
 
         inputLineEl.appendChild(promptEl);
-        inputLineEl.appendChild(inputBufferEl);
+        inputLineEl.appendChild(inputBeforeEl);
         inputLineEl.appendChild(cursorEl);
+        inputLineEl.appendChild(inputAfterEl);
         outputEl.appendChild(inputLineEl);
 
         inputBuffer = ''; // Clear buffer for new input
-        if (inputBufferEl) inputBufferEl.textContent = '';
+        cursorPos = 0;
+        if (inputBeforeEl) inputBeforeEl.textContent = '';
+        if (inputAfterEl) inputAfterEl.textContent = '';
         if (mobileInput) mobileInput.value = ''; // Clear mobile input too
         terminalEl.scrollTop = terminalEl.scrollHeight; // Scroll to new input line
 
@@ -460,6 +465,18 @@
         if (inputLineEl) {
             inputLineEl.style.display = '';
         }
+        updateInputDisplay();
+    }
+
+    function updateInputDisplay() {
+        if (!inputBeforeEl || !inputAfterEl) return;
+        inputBeforeEl.textContent = inputBuffer.slice(0, cursorPos);
+        inputAfterEl.textContent = inputBuffer.slice(cursorPos);
+        if (mobileInput) {
+            mobileInput.value = inputBuffer;
+            mobileInput.setSelectionRange(cursorPos, cursorPos);
+        }
+        terminalEl.scrollTop = terminalEl.scrollHeight;
     }
     
     // Renders the simulated 40x25 character screen to the display
@@ -625,12 +642,23 @@
             if (e.key === 'Enter') {
                 if (inputResolve) inputResolve(inputBuffer); // Resolve promise with input
             } else if (e.key === 'Backspace') {
-                inputBuffer = inputBuffer.slice(0, -1);
-                inputBufferEl.textContent = inputBuffer;
+                if (cursorPos > 0) {
+                    inputBuffer = inputBuffer.slice(0, cursorPos - 1) + inputBuffer.slice(cursorPos);
+                    cursorPos--;
+                }
+            } else if (e.key === 'Delete') {
+                if (cursorPos < inputBuffer.length) {
+                    inputBuffer = inputBuffer.slice(0, cursorPos) + inputBuffer.slice(cursorPos + 1);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (cursorPos > 0) cursorPos--;
+            } else if (e.key === 'ArrowRight') {
+                if (cursorPos < inputBuffer.length) cursorPos++;
             } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { // Regular character input
-                inputBuffer += e.key;
-                inputBufferEl.textContent = inputBuffer;
+                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos);
+                cursorPos++;
             }
+            updateInputDisplay();
             return; // Don't process as general command input
         }
 
@@ -639,14 +667,24 @@
         if(e.key === 'Enter') {
             processCommand(inputBuffer);
         } else if(e.key === 'Backspace') {
-            inputBuffer = inputBuffer.slice(0,-1);
-        } else if(e.key.length === 1) { // Only add single characters
-            inputBuffer += e.key;
+            if (cursorPos > 0) {
+                inputBuffer = inputBuffer.slice(0, cursorPos - 1) + inputBuffer.slice(cursorPos);
+                cursorPos--;
+            }
+        } else if (e.key === 'Delete') {
+            if (cursorPos < inputBuffer.length) {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + inputBuffer.slice(cursorPos + 1);
+            }
+        } else if (e.key === 'ArrowLeft') {
+            if (cursorPos > 0) cursorPos--;
+        } else if (e.key === 'ArrowRight') {
+            if (cursorPos < inputBuffer.length) cursorPos++;
+        } else if(e.key.length === 1 && !e.ctrlKey && !e.metaKey) { // Only add single characters
+            inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos);
+            cursorPos++;
         }
 
-        // Update the displayed input buffer
-        if(inputBufferEl) inputBufferEl.textContent = inputBuffer;
-        terminalEl.scrollTop = terminalEl.scrollHeight; // Keep input in view
+        updateInputDisplay();
     });
 
     // Mobile input handling (using a hidden input field)
@@ -661,7 +699,12 @@
             } else {
                 processCommand(inputBuffer);
             }
+        } else if (e.key === 'ArrowLeft') {
+            if (cursorPos > 0) cursorPos--;
+        } else if (e.key === 'ArrowRight') {
+            if (cursorPos < inputBuffer.length) cursorPos++;
         }
+        updateInputDisplay();
     });
 
     mobileInput.addEventListener('input', (e) => {
@@ -674,11 +717,9 @@
 
         // Sync the internal buffer with the mobile input field's value
         inputBuffer = mobileInput.value;
-        if (inputBufferEl) {
-            inputBufferEl.textContent = inputBuffer;
-        }
+        cursorPos = mobileInput.selectionStart || inputBuffer.length;
         playKeyClick(); // Play click sound on input changes
-        terminalEl.scrollTop = terminalEl.scrollHeight;
+        updateInputDisplay();
     });
 
     // Break button functionality for touch devices
