@@ -350,6 +350,9 @@
                 .replace(/NOT\s+/gi, ' !')
                 .replace(/<>/g, '!=');
 
+            // Convert BASIC equality operator to JavaScript
+            finalExpr = finalExpr.replace(/(^|[^<>!=])=([^=])/g, '$1==$2');
+
             // To make c64funcs accessible in the new Function's scope,
             // replace C64 function calls like RND(1) with _c64.RND(1)
             // and pass the c64funcs object as an argument to the generated function.
@@ -1051,7 +1054,28 @@
         }
         return { pc: context.pc + 1 }; // Default: continue to next statement in line
     }
-    
+
+    // Splits a program line into statements, ignoring colons within quoted strings
+    function splitStatements(line) {
+        const statements = [];
+        let current = '';
+        let inString = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                inString = !inString;
+                current += ch;
+            } else if (ch === ':' && !inString) {
+                statements.push(current.trim());
+                current = '';
+            } else {
+                current += ch;
+            }
+        }
+        if (current.trim() !== '') statements.push(current.trim());
+        return statements;
+    }
+
     // Executes the loaded BASIC program
     async function runProgram() {
         isRunning = true; // Set running flag
@@ -1100,7 +1124,7 @@
             const currentLineNumber = lineNumbers[pc];
             lastLineNumber = currentLineNumber; // Keep track for error reporting
             const fullLineStatement = program[currentLineNumber];
-            const statements = fullLineStatement.split(':'); // Split multiple statements per line
+        const statements = splitStatements(fullLineStatement); // Split statements outside quotes
             let jumpOccurred = false; // Flag to indicate if PC was changed by GOTO/FOR/NEXT/GOSUB/RETURN
 
             for (const statement of statements) {
