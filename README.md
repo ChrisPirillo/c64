@@ -3,7 +3,7 @@
 
 Experience the classic Commodore 64 with the CHRISPIRILLO64 BASIC V27 retro simulator. Write and run BASIC programs, POKE memory, and relive the 8-bit era.
 
-![Uploading c64.png…]()
+![c64](https://github.com/user-attachments/assets/25712e44-3afd-4382-a6ce-981f2fcda699)
 
 ---
 
