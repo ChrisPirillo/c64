@@ -110,10 +110,7 @@
 
         .cursor {
             background: var(--c64-text-color);
-            display: inline-block;
-            width: 16px; 
-            height: 1.2em;
-            vertical-align: text-bottom;
+            color: var(--c64-blue);
             animation: blink 1s step-end infinite;
         }
 
@@ -161,8 +158,10 @@
     const breakButton = document.getElementById('break-button');
     const crtContainer = document.querySelector('.crt-container');
     
-    let inputLineEl, promptEl, inputBeforeEl, inputAfterEl, cursorEl;
+    let inputLineEl, promptEl, inputBufferEl;
     let cursorPos = 0;
+    let cursorLineIndex = 0; // Track which line is being edited
+    let editingLineNumber = null; // Remember original line number when editing
     let program = {};
     let variables = {};
     let memory = {};
@@ -440,24 +439,25 @@
             inputLineEl.remove();
         }
 
+        // Remove a leftover blank placeholder line at the end so the
+        // new input line appears directly after READY.
+        if (outputEl.lastChild && outputEl.lastChild.dataset && outputEl.lastChild.dataset.blank) {
+            outputEl.removeChild(outputEl.lastChild);
+        }
+
         inputLineEl = document.createElement('p');
         promptEl = document.createElement('span');
         promptEl.textContent = promptText;
-        inputBeforeEl = document.createElement('span');
-        inputAfterEl = document.createElement('span');
-        cursorEl = document.createElement('span');
-        cursorEl.className = 'cursor'; // Apply cursor blink animation
+        inputBufferEl = document.createElement('span');
 
         inputLineEl.appendChild(promptEl);
-        inputLineEl.appendChild(inputBeforeEl);
-        inputLineEl.appendChild(cursorEl);
-        inputLineEl.appendChild(inputAfterEl);
+        inputLineEl.appendChild(inputBufferEl);
         outputEl.appendChild(inputLineEl);
+        cursorLineIndex = Array.from(outputEl.children).indexOf(inputLineEl);
 
         inputBuffer = ''; // Clear buffer for new input
         cursorPos = 0;
-        if (inputBeforeEl) inputBeforeEl.textContent = '';
-        if (inputAfterEl) inputAfterEl.textContent = '';
+        editingLineNumber = null; // New line, not editing existing program line
         if (mobileInput) mobileInput.value = ''; // Clear mobile input too
         terminalEl.scrollTop = terminalEl.scrollHeight; // Scroll to new input line
 
@@ -469,14 +469,63 @@
     }
 
     function updateInputDisplay() {
-        if (!inputBeforeEl || !inputAfterEl) return;
-        inputBeforeEl.textContent = inputBuffer.slice(0, cursorPos);
-        inputAfterEl.textContent = inputBuffer.slice(cursorPos);
+        if (!inputBufferEl) return;
+        inputBufferEl.textContent = '';
+        inputBufferEl.append(document.createTextNode(inputBuffer.slice(0, cursorPos)));
+        const cursorSpan = document.createElement('span');
+        cursorSpan.className = 'cursor';
+        cursorSpan.textContent = inputBuffer[cursorPos] || ' ';
+        inputBufferEl.append(cursorSpan);
+        inputBufferEl.append(document.createTextNode(inputBuffer.slice(cursorPos + 1)));
         if (mobileInput) {
             mobileInput.value = inputBuffer;
             mobileInput.setSelectionRange(cursorPos, cursorPos);
         }
         terminalEl.scrollTop = terminalEl.scrollHeight;
+    }
+
+    function finalizeCurrentLine() {
+        if (inputLineEl && inputLineEl.parentNode) {
+            const content = promptEl.textContent + inputBuffer;
+        if (content === '') {
+            const blankLine = document.createElement('p');
+            blankLine.innerHTML = '&nbsp;';
+            blankLine.dataset.blank = 'true';
+            inputLineEl.parentNode.replaceChild(blankLine, inputLineEl);
+        } else {
+            const staticLine = document.createElement('p');
+            staticLine.textContent = content;
+            if (editingLineNumber !== null) {
+                staticLine.dataset.originalNumber = editingLineNumber;
+            }
+            inputLineEl.parentNode.replaceChild(staticLine, inputLineEl);
+        }
+        }
+    }
+
+    function moveCursorLine(offset) {
+        const newIndex = cursorLineIndex + offset;
+        if (newIndex < 0 || newIndex >= outputEl.children.length) return;
+
+        finalizeCurrentLine();
+
+        const targetLine = outputEl.children[newIndex];
+        if (targetLine.dataset.blank) {
+            inputBuffer = '';
+        } else {
+            inputBuffer = targetLine.textContent || '';
+        }
+        if (targetLine.dataset.originalNumber !== undefined) {
+            editingLineNumber = parseInt(targetLine.dataset.originalNumber, 10);
+        } else {
+            const match = inputBuffer.match(/^(\d+)/);
+            editingLineNumber = match ? parseInt(match[1], 10) : null;
+        }
+        cursorPos = Math.min(cursorPos, inputBuffer.length);
+        promptEl.textContent = '';
+        outputEl.replaceChild(inputLineEl, targetLine);
+        cursorLineIndex = newIndex;
+        updateInputDisplay();
     }
     
     // Renders the simulated 40x25 character screen to the display
@@ -614,6 +663,19 @@
     }
 
     // Keyboard input handling for desktop
+    function isLeftArrow(e) {
+        return e.key === 'ArrowLeft' || e.key === 'Left' || e.keyCode === 37;
+    }
+    function isRightArrow(e) {
+        return e.key === 'ArrowRight' || e.key === 'Right' || e.keyCode === 39;
+    }
+    function isUpArrow(e) {
+        return e.key === 'ArrowUp' || e.key === 'Up' || e.keyCode === 38;
+    }
+    function isDownArrow(e) {
+        return e.key === 'ArrowDown' || e.key === 'Down' || e.keyCode === 40;
+    }
+
     document.addEventListener('keydown', (e) => {
         if (isTouchDevice()) return; // Skip if touch device, mobileInput handles it
 
@@ -650,12 +712,22 @@
                 if (cursorPos < inputBuffer.length) {
                     inputBuffer = inputBuffer.slice(0, cursorPos) + inputBuffer.slice(cursorPos + 1);
                 }
-            } else if (e.key === 'ArrowLeft') {
+            } else if (isLeftArrow(e)) {
                 if (cursorPos > 0) cursorPos--;
-            } else if (e.key === 'ArrowRight') {
+            } else if (isRightArrow(e)) {
                 if (cursorPos < inputBuffer.length) cursorPos++;
+            } else if (isUpArrow(e)) {
+                moveCursorLine(-1);
+                return;
+            } else if (isDownArrow(e)) {
+                moveCursorLine(1);
+                return;
             } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { // Regular character input
-                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos);
+                if (cursorPos < inputBuffer.length) {
+                    inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos + 1);
+                } else {
+                    inputBuffer = inputBuffer.slice(0, cursorPos) + e.key;
+                }
                 cursorPos++;
             }
             updateInputDisplay();
@@ -675,12 +747,22 @@
             if (cursorPos < inputBuffer.length) {
                 inputBuffer = inputBuffer.slice(0, cursorPos) + inputBuffer.slice(cursorPos + 1);
             }
-        } else if (e.key === 'ArrowLeft') {
+        } else if (isLeftArrow(e)) {
             if (cursorPos > 0) cursorPos--;
-        } else if (e.key === 'ArrowRight') {
+        } else if (isRightArrow(e)) {
             if (cursorPos < inputBuffer.length) cursorPos++;
+        } else if (isUpArrow(e)) {
+            moveCursorLine(-1);
+            return;
+        } else if (isDownArrow(e)) {
+            moveCursorLine(1);
+            return;
         } else if(e.key.length === 1 && !e.ctrlKey && !e.metaKey) { // Only add single characters
-            inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos);
+            if (cursorPos < inputBuffer.length) {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos + 1);
+            } else {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key;
+            }
             cursorPos++;
         }
 
@@ -699,10 +781,32 @@
             } else {
                 processCommand(inputBuffer);
             }
-        } else if (e.key === 'ArrowLeft') {
+        } else if (isLeftArrow(e)) {
             if (cursorPos > 0) cursorPos--;
-        } else if (e.key === 'ArrowRight') {
+        } else if (isRightArrow(e)) {
             if (cursorPos < inputBuffer.length) cursorPos++;
+        } else if (isUpArrow(e)) {
+            moveCursorLine(-1);
+            return;
+        } else if (isDownArrow(e)) {
+            moveCursorLine(1);
+            return;
+        } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            if (cursorPos < inputBuffer.length) {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key + inputBuffer.slice(cursorPos + 1);
+            } else {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + e.key;
+            }
+            cursorPos++;
+        } else if (e.key === 'Backspace') {
+            if (cursorPos > 0) {
+                inputBuffer = inputBuffer.slice(0, cursorPos - 1) + inputBuffer.slice(cursorPos);
+                cursorPos--;
+            }
+        } else if (e.key === 'Delete') {
+            if (cursorPos < inputBuffer.length) {
+                inputBuffer = inputBuffer.slice(0, cursorPos) + inputBuffer.slice(cursorPos + 1);
+            }
         }
         updateInputDisplay();
     });
@@ -735,6 +839,10 @@
         if (inputLineEl && inputLineEl.parentNode) {
             const staticLine = document.createElement('p');
             staticLine.textContent = promptEl.textContent + cmd;
+            const lineMatchStart = cmd.trim().match(/^(\d+)/);
+            if (lineMatchStart) {
+                staticLine.dataset.originalNumber = parseInt(lineMatchStart[1], 10);
+            }
             inputLineEl.parentNode.replaceChild(staticLine, inputLineEl);
         }
 
@@ -763,8 +871,12 @@
             } else {
                 delete program[lineNumber]; // Delete line if statement is empty
             }
+            if (editingLineNumber !== null && editingLineNumber !== lineNumber) {
+                delete program[editingLineNumber]; // Remove old line number if changed
+            }
             saveProgramToLocalStorage();
             createInputLine(); // Create new input line
+            editingLineNumber = null;
         } else {
             // If not a line number, execute as a direct command
             if (trimmedCmd.startsWith('?')) {
