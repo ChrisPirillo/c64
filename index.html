@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SEO & Performance Metadata RESTORED -->
+    <meta charset="UTF-UTF-8">
+    <title>CHRISPIRILLO64 - Commodore 64 Retro Simulator</title>
+    <meta name="description" content="Experience the classic Commodore 64 with the CHRISPIRILLO64 BASIC V27 retro simulator. Write and run BASIC programs, POKE memory, and relive the 8-bit era.">
+    <meta name="keywords" content="Commodore 64, C64, BASIC, retro computer, 8-bit, emulator, simulator, CHRISPIRILLO64, POKE, PEEK, Chris Pirillo, vintage computing">
+    <meta name="author" content="Chris Pirillo">
+    <link rel="canonical" href="https://pirillo.com/arcade/c64.html">
+
+    <!-- Core Web Vitals: Critical viewport tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO: Open Graph metadata for social sharing (Facebook, etc.) -->
+    <meta property="og:title" content="CHRISPIRILLO64 - Commodore 64 Retro Simulator">
+    <meta property="og:description" content="Experience the classic Commodore 64 with the CHRISPIRILLO64 BASIC V27 retro simulator. Write and run BASIC programs, POKE memory, and relive the 8-bit era.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://pirillo.com/arcade/c64.html">
+    <meta property="og:image" content="https://pirillo.com/arcade/images/c64.png">
+    <meta property="og:image:width" content="859">
+    <meta property="og:image:height" content="663">
+    <meta property="og:site_name" content="Chris Pirillo's Arcade">
+
+    <!-- SEO: Twitter Card metadata -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@ChrisPirillo">
+    <meta name="twitter:creator" content="@ChrisPirillo">
+    <meta name="twitter:title" content="CHRISPIRILLO64 - Commodore 64 Retro Simulator">
+    <meta name="twitter:description" content="Experience the classic Commodore 64 with the CHRISPIRILLO64 BASIC V27 retro simulator. Write and run BASIC programs, POKE memory, and relive the 8-bit era.">
+    <meta name="twitter:image" content="https://pirillo.com/arcade/images/c64.png">
+
+    <!-- Performance: Resource hints to warm up connections to critical domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <!-- Performance: Asynchronously preload the critical font stylesheet to prevent render-blocking -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <!-- Fallback for browsers that don't support preload's onload event -->
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"></noscript>
+
+    <!-- Analytics: Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1CQ4D3VQ3L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1CQ4D3VQ3L');
+    </script>
+
+    <!-- SEO: JSON-LD Structured Data for rich results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "CHRISPIRILLO64 - Commodore 64 Retro Simulator",
+      "url": "https://pirillo.com/arcade/c64.html",
+      "author": {
+        "@type": "Person",
+        "name": "Chris Pirillo"
+      },
+      "description": "Experience the classic Commodore 64 with the CHRISPIRILLO64 BASIC V27 retro simulator. Write and run BASIC programs, POKE memory, and relive the 8-bit era.",
+      "applicationCategory": "Game",
+      "gamePlatform": "Web Browser",
+      "operatingSystem": "Any web browser",
+      "keywords": "Commodore 64, C64, BASIC, retro computer, 8-bit, emulator, simulator, CHRISPIRILLO64, POKE, PEEK, Chris Pirillo, vintage computing"
+    }
+    </script>
+
+    <style>
+        :root {
+            --c64-blue: #352879;
+            --c64-light-blue: #6c5eb5;
+            --c64-text-color: #7869c4;
+            --c64-brown: #68372B;
+            --c64-white: #FFFFFF;
+            --font-family: 'Press Start 2P', monospace;
+        }
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #000; }
+        .crt-container { display: flex; justify-content: center; align-items: center; height: 100%; background-color: var(--c64-light-blue); padding: 2vw; box-sizing: border-box; position: relative; transition: height 0.1s ease-out; }
+        .crt-container::before, .crt-container::after { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; pointer-events: none; z-index: 10; }
+        .crt-container::before { background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; }
+        .crt-container::after { background: rgba(18, 16, 16, 0.1); opacity: 0; animation: flicker 0.15s infinite; }
+        @keyframes flicker { 0% { opacity: 0.1; } 20% { opacity: 1; } 80% { opacity: 0.3; } 100% { opacity: 0.1; } }
+        
+        #screen {
+            font-family: var(--font-family);
+            background-color: var(--c64-blue);
+            color: var(--c64-text-color);
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding: 24px;
+            overflow: hidden;
+            position: relative;
+            cursor: default;
+            image-rendering: pixelated;
+            font-size: 16px;
+            line-height: 1.5;
+            text-transform: uppercase;
+        }
+
+        #terminal {
+            width: 100%; height: 100%; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;
+        }
+        #terminal::-webkit-scrollbar { display: none; }
+        #output p { margin: 0; white-space: pre-wrap; word-break: break-all; }
+        #input-line { margin: 0; white-space: pre-wrap; word-break: break-all; }
+
+        .cursor {
+            background: var(--c64-text-color);
+            display: inline-block;
+            width: 16px; 
+            height: 1.2em;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink { from, to { background-color: transparent; } 50% { background-color: var(--c64-text-color); } }
+        #mobile-input { position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none; }
+        
+        /* FIXED: Break button is now inside the screen container for better positioning */
+        .break-button {
+            position: absolute;
+            bottom: 10px; /* A fixed value works better with viewport resizing */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: var(--c64-brown);
+            color: var(--c64-white);
+            border: 2px solid var(--c64-white);
+            font-family: var(--font-family);
+            font-size: 1em;
+            z-index: 200;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            display: none;
+        }
+        .break-button.visible { display: block; }
+    </style>
+</head>
+<body>
+    <input id="mobile-input" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" />
+
+    <div class="crt-container">
+        <div id="screen">
+            <div id="terminal">
+                <div id="output"></div>
+            </div>
+             <!-- The button is now inside the screen element -->
+            <button id="break-button" class="break-button">BREAK</button>
+        </div>
+    </div>
+
+    <script>
+    // --- SECTION 1: DOM & GLOBAL STATE ---
+    const terminalEl = document.getElementById('terminal');
+    const outputEl = document.getElementById('output');
+    const mobileInput = document.getElementById('mobile-input');
+    const breakButton = document.getElementById('break-button');
+    const crtContainer = document.querySelector('.crt-container');
+    
+    let inputLineEl, promptEl, inputBufferEl, cursorEl;
+    let program = {};
+    let variables = {};
+    let memory = {};
+    let inputBuffer = "";
+    let isRunning = false;
+    let stopExecution = false;
+    let isWaitingForInput = false;
+    let inputResolve = null;
+    let gosubStack = [];
+    let forLoopStack = [];
+    let printState = { onNewLine: true };
+    let bootTime = 0;
+    let lastKeyPressed = ''; // New global variable to hold the last key pressed for GET
+
+    // Initialize screen and color memory arrays
+    let screenMemory = new Array(1000).fill(32); // 40x25 characters
+    let colorMemory = new Array(1000).fill(14);  // 16 colors, 14 is light blue
+
+    // C64 color palette in hex codes
+    const C64_PALETTE = ['#000000', '#FFFFFF', '#68372B', '#70A4B2', '#6F3D86', '#588D43', '#352879', '#B8C76F', '#6F4F25', '#433900', '#9A6759', '#444444', '#6C6C6C', '#9AD284', '#6C5EB5', '#959595'];
+    
+    // --- SECTION 1.5: PETSCII MAPPING & EXPRESSION EVALUATOR ---
+    // PETSCII character mapping, including solid block (160)
+    const PETSCII_MAP = { 32: ' ', 160: '█' };
+    for(let i=65; i<=90; i++) PETSCII_MAP[i] = String.fromCharCode(i); // A-Z
+    for(let i=48; i<=57; i++) PETSCII_MAP[i] = String.fromCharCode(i); // 0-9
+    Object.assign(PETSCII_MAP, { // Common symbols
+        42:'*',43:'+',44:',',45:'-',46:'.',47:'/',58:':',59:';',60:'<',61:'=',62:'>',63:'?',34:'"'
+    });
+    
+    // C64 BASIC built-in functions
+    const c64funcs = {
+        ABS: Math.abs,
+        INT: Math.floor,
+        RND: (x) => Math.random(), // RND(1) for random number between 0 and 1
+        SQR: (x) => { if (x < 0) throw new Error("ILLEGAL QUANTITY ERROR"); return Math.sqrt(x); },
+        SIN: Math.sin, COS: Math.cos, TAN: Math.tan, ATN: Math.atan,
+        LOG: Math.log, EXP: Math.exp,
+        LEN: (s) => String(s).length,
+        LEFT$: (s, n) => String(s).substring(0, n),
+        RIGHT$: (s, n) => String(s).slice(-n),
+        MID$: (s, start, len) => { // MID$(string, start, length)
+            if (len === undefined) return String(s).substring(start - 1);
+            return String(s).substring(start - 1, start - 1 + len);
+        },
+        CHR$: (c) => String.fromCharCode(c),
+        ASC: (s) => String(s).charCodeAt(0) || 0,
+        STR$: String, // Converts number to string
+        VAL: parseFloat, // Converts string to number
+        PEEK: (addr) => memory[addr] || 0, // Reads value from simulated memory
+        TI: () => Math.floor((Date.now() - bootTime) * 60 / 1000), // Time in 1/60ths of a second
+        TI$: () => { // Time as string "HHMMSS"
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            return `${hh}${mm}${ss}`;
+        },
+    };
+
+    // Data for HELP command
+    const HELP_DATA = {
+        COMMANDS: [
+            { cmd: "CLS", desc: "CLEARS THE SCREEN.", detail: "CLS\nCLEARS THE DISPLAY SCREEN." },
+            { cmd: "DATA", desc: "STORES DATA WITHIN A PROGRAM.", detail: "DATA <LITERAL>,...\nSTORES NUMERIC AND STRING CONSTANTS. USED WITH READ AND RESTORE." },
+            { cmd: "DIM", desc: "DECLARES AN ARRAY.", detail: "DIM <VAR>(<SIZE>)\nCREATES SPACE FOR AN ARRAY. E.g., DIM A(10) FOR A NUMERIC ARRAY, DIM A$(5) FOR A STRING ARRAY." },
+            { cmd: "DRAW", desc: "RENDERS SCREEN/COLOR MEMORY TO DISPLAY.", detail: "DRAW\nREDRAWS THE ENTIRE 40x25 SIMULATED SCREEN BASED ON POKED MEMORY ARRAYS." },
+            { cmd: "END", desc: "STOPS PROGRAM EXECUTION.", detail: "END\nTERMINATES PROGRAM EXECUTION." },
+            { cmd: "FOR", desc: "BEGINS A FOR...NEXT LOOP.", detail: "FOR <VAR>=<START> TO <END> [STEP <S>]\nSTARTS A LOOP. E.g., FOR I=1 TO 10 STEP 2." },
+            { cmd: "GET", desc: "READS A SINGLE CHARACTER FROM KEYBOARD (NON-BLOCKING).", detail: "GET <VAR$>\nASSIGNS A SINGLE KEYPRESS TO A STRING VARIABLE WITHOUT WAITING FOR ENTER. IF NO KEY PRESSED, VAR$ IS EMPTY. E.g., GET A$." },
+            { cmd: "GOSUB", desc: "JUMPS TO A SUBROUTINE.", detail: "GOSUB <LINE#>\nJUMPS TO A SUBROUTINE, SAVING THE RETURN ADDRESS ON A STACK. USE WITH RETURN." },
+            { cmd: "GOTO", desc: "JUMPS TO A PROGRAM LINE.", detail: "GOTO <LINE#>\nCONTINUES EXECUTION AT THE SPECIFIED LINE NUMBER." },
+            { cmd: "IF...THEN", desc: "PERFORMS A CONDITIONAL ACTION.", detail: "IF <CONDITION> THEN <STATEMENT>\nEXECUTES THE STATEMENT AFTER THEN IF THE CONDITION IS TRUE. E.g., IF A=10 THEN PRINT \"A IS 10\"." },
+            { cmd: "INPUT", desc: "PROMPTS FOR USER INPUT.", detail: 'INPUT ["<PROMPT>";]<VAR>\nWAITS FOR USER TO ENTER DATA. E.g., INPUT "ENTER NAME?"; N$.' },
+            { cmd: "LIST", desc: "SHOWS THE PROGRAM LISTING.", detail: "LIST\nDISPLAYS THE CURRENT PROGRAM LINES IN NUMERICAL ORDER." },
+            { cmd: "LOAD", desc: "LOADS A PROGRAM FROM A FILE.", detail: "LOAD\nOPENS A FILE DIALOG TO LOAD A .JSON PROGRAM FILE." },
+            { cmd: "NEW", desc: "CLEARS THE PROGRAM AND VARIABLES.", detail: "NEW\nERASES THE CURRENT PROGRAM AND ALL VARIABLES IN MEMORY." },
+            { cmd: "NEXT", desc: "CONTINUES A FOR...NEXT LOOP.", detail: "NEXT [<VAR>]\nCONTINUES A FOR LOOP. If VAR is omitted, the most recent FOR loop is used." },
+            { cmd: "POKE", desc: "WRITES A VALUE TO A MEMORY ADDRESS.", detail: "POKE <ADDR>, <VALUE>\nWRITES A VALUE TO A SIMULATED MEMORY LOCATION. Affects screen/color memory directly." },
+            { cmd: "PRINT", desc: "DISPLAYS TEXT OR VARIABLE VALUES.", detail: "PRINT [<EXPRESSION>]\nDISPLAYS DATA ON THE SCREEN. Use ; or , to suppress newlines. Also recognizes '{CLR}' for screen clear." },
+            { cmd: "READ", desc: "READS A VALUE FROM A DATA STATEMENT.", detail: "READ <VAR1>,...\nREADS VALUES SEQUENTIALLY FROM DATA STATEMENTS IN THE PROGRAM. Use with DATA." },
+            { cmd: "REM", desc: "ADDS A NON-EXECUTABLE COMMENT.", detail: "REM <COMMENT>\nIGNORED BY THE INTERPRETER. For comments within the program." },
+            { cmd: "RESTORE", desc: "RESETS THE DATA POINTER.", detail: "RESTORE\nRESETS THE INTERNAL POINTER FOR DATA STATEMENTS, ALLOWING THEM TO BE RE-READ FROM THE BEGINNING." },
+            { cmd: "RETURN", desc: "RETURNS FROM A SUBROUTINE.", detail: "RETURN\nRETURNS FROM A SUBROUTINE TO THE STATEMENT IMMEDIATELY FOLLOWING THE LAST GOSUB CALL." },
+            { cmd: "RUN", desc: "EXECUTES THE CURRENT PROGRAM.", detail: "RUN\nSTARTS PROGRAM EXECUTION FROM THE FIRST LINE." },
+            { cmd: "SAVE", desc: "SAVES THE PROGRAM TO A FILE.", detail: "SAVE\nOPENS A FILE DIALOG TO SAVE THE PROGRAM AS A .JSON FILE." }
+        ],
+        FUNCTIONS: {
+            "ABS": { desc: "RETURNS THE ABSOLUTE VALUE OF A NUMBER.", example: "PRINT ABS(-5)" },
+            "ASC": { desc: "RETURNS THE ASCII CODE FOR THE FIRST CHARACTER OF A STRING.", example: "PRINT ASC(\"A\")" },
+            "ATN": { desc: "RETURNS THE ARCTANGENT (IN RADIANS) OF A NUMBER.", example: "PRINT ATN(1)" },
+            "CHR$": { desc: "RETURNS A CHARACTER FROM AN ASCII CODE.", example: "PRINT CHR$(65)" },
+            "COS": { desc: "RETURNS THE COSINE OF A NUMBER (IN RADIANS).", example: "PRINT COS(0)" },
+            "EXP": { desc: "RETURNS E (2.71828) TO THE POWER OF A NUMBER.", example: "PRINT EXP(1)" },
+            "INT": { desc: "RETURNS THE INTEGER PART OF A NUMBER (FLOORS IT).", example: "PRINT INT(3.14)" },
+            "LEFT$": { desc: "RETURNS THE LEFTMOST N CHARACTERS OF A STRING.", example: "PRINT LEFT$(\"HELLO\", 2)" },
+            "LEN": { desc: "RETURNS THE LENGTH OF A STRING.", example: "PRINT LEN(\"HELLO\")" },
+            "LOG": { desc: "RETURNS THE NATURAL LOGARITHM OF A NUMBER.", example: "PRINT LOG(10)" },
+            "MID$": { desc: "RETURNS A SUBSTRING FROM A STRING.", example: "PRINT MID$(\"HELLO\", 2, 3) (STARTS AT POS 2, LEN 3)\nPRINT MID$(\"HELLO\", 2) (STARTS AT POS 2, TO END)" },
+            "PEEK": { desc: "RETURNS A VALUE FROM A MEMORY ADDRESS.", example: "PRINT PEEK(53281)" },
+            "RIGHT$": { desc: "RETURNS THE RIGHTMOST N CHARACTERS OF A STRING.", example: "PRINT RIGHT$(\"HELLO\", 2)" },
+            "RND": { desc: "RETURNS A RANDOM NUMBER BETWEEN 0 AND 1.", example: "PRINT INT(RND(1)*100)+1 (RANDOM 1-100)" },
+            "SIN": { desc: "RETURNS THE SINE OF A NUMBER (IN RADIANS).", example: "PRINT SIN(0)" },
+            "SQR": { desc: "RETURNS THE SQUARE ROOT OF A NUMBER.", example: "PRINT SQR(25)" },
+            "STR$": { desc: "CONVERTS A NUMBER TO A STRING.", example: "A$ = STR$(10)" },
+            "TAN": { desc: "RETURNS THE TANGENT OF A NUMBER (IN RADIANS).", example: "PRINT TAN(0)" },
+            "TI": { desc: "RETURNS THE SYSTEM JIFFY CLOCK (1/60THS OF A SECOND).", example: "PRINT TI" },
+            "TI$": { desc: "RETURNS THE SYSTEM TIME AS A STRING (HHMMSS).", example: "PRINT TI$" },
+            "VAL": { desc: "CONVERTS A STRING TO A NUMBER.", example: "PRINT VAL(\"123\")" }
+        }
+    };
+    
+    // Evaluates BASIC expressions, handles variables and functions
+    function evaluateExpression(expr) {
+        expr = expr.trim();
+        // If the expression is a string literal (starts and ends with quotes),
+        // return its unquoted content directly. This prevents `new Function`
+        // from attempting to parse content like "HELLO:" as code.
+        if (expr.startsWith('"') && expr.endsWith('"')) {
+            return expr.substring(1, expr.length - 1);
+        }
+
+        // Handle numeric literals
+        if (/^-?\d+(\.\d+)?$/.test(expr)) {
+            return parseFloat(expr);
+        }
+
+        // Handle direct variable lookups (e.g., A, B$)
+        if (/^[A-Z][A-Z0-9]*\$?$/.test(expr.toUpperCase())) {
+            const varName = expr.toUpperCase();
+            const value = variables[varName];
+            if (value === undefined) {
+                // Return default values for uninitialized variables
+                return varName.endsWith('$') ? '' : 0;
+            }
+            // If it's an array, accessing without index is an error in BASIC
+            if (typeof value === 'object' && value.type === 'array') {
+                 throw new Error("TYPE MISMATCH ERROR (ARRAY WITHOUT INDEX)");
+            }
+            return value;
+        }
+
+        // Handle function calls (e.g., LEN("HI"), RND(1))
+        const funcCall = parseFunction(expr);
+        if (funcCall) {
+            const { func, args } = funcCall;
+            const evaluatedArgs = args.map(arg => evaluateExpression(arg)); // Recursively evaluate arguments
+            
+            // Call the corresponding JS function from c64funcs
+            if (c64funcs[func]) {
+                try {
+                    const result = c64funcs[func](...evaluatedArgs);
+                    if (typeof result === 'boolean') { // Convert JS boolean to BASIC -1/0
+                        return result ? -1 : 0;
+                    }
+                    return result;
+                } catch (e) {
+                    throw e; // Re-throw errors from c64funcs
+                }
+            } else {
+                throw new Error("UNDEF'D FUNCTION ERROR");
+            }
+        }
+
+        // Final attempt to evaluate as a general JavaScript expression
+        // This handles arithmetic operations, comparisons, and logical operators
+        try {
+            // Replace BASIC variables with their JS string/numeric values.
+            // Strings must be JSON.stringify'd to be valid JavaScript literals for `new Function`.
+            let finalExpr = expr.replace(/[A-Z][A-Z0-9]*\$?/g, (match) => {
+                const varName = match.toUpperCase();
+                if (variables[varName] !== undefined) {
+                    const value = variables[varName];
+                    if (typeof value === 'object' && value.type === 'array') {
+                        throw new Error("TYPE MISMATCH ERROR (ARRAY WITHOUT INDEX)");
+                    }
+                    return typeof value === 'string' ? JSON.stringify(value) : String(value);
+                }
+                return match;
+            });
+
+            // Replace BASIC operators/keywords with JS equivalents
+            finalExpr = finalExpr
+                .replace(/\s+AND\s+/gi, ' && ')
+                .replace(/\s+OR\s+/gi, ' || ')
+                .replace(/NOT\s+/gi, ' !')
+                .replace(/<>/g, '!=');
+
+            // To make c64funcs accessible in the new Function's scope,
+            // replace C64 function calls like RND(1) with _c64.RND(1)
+            // and pass the c64funcs object as an argument to the generated function.
+            finalExpr = finalExpr.replace(/([A-Z][A-Z0-9$]*)\s*\(/g, (match, funcName) => {
+                if (c64funcs[funcName.toUpperCase()]) {
+                    return `_c64.${funcName.toUpperCase()}(`;
+                }
+                return match; // Not a c64 function, leave as is
+            });
+
+            // Create a new Function, passing '_c64' as an argument name for our c64funcs object.
+            const func = new Function('_c64', `return ${finalExpr}`);
+            const result = func(c64funcs); // Pass the actual c64funcs object here
+
+            if (typeof result === 'boolean') {
+                return result ? -1 : 0;
+            }
+            return result;
+        } catch (e) {
+            throw new Error('SYNTAX ERROR');
+        }
+    }
+
+    // --- SECTION 2: AUDIO ENGINE ---
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playKeyClick() {
+        // Ensure audio context is running before playing sound
+        if (!audioContext || audioContext.state !== 'running') return;
+
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // High-pitched click
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime); // Volume
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.05); // Fade out quickly
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.05); // Short duration
+    }
+
+    // --- SECTION 3: TERMINAL I/O ---
+    function print(text, isError = false) {
+        const p = document.createElement('p');
+        p.textContent = (isError ? '?' : '') + String(text);
+        outputEl.appendChild(p);
+        terminalEl.scrollTop = terminalEl.scrollHeight; // Scroll to bottom
+        printState.onNewLine = true;
+    }
+
+    function printCentered(text) {
+        const p = document.createElement('p');
+        p.textContent = text;
+        p.style.textAlign = 'center';
+        outputEl.appendChild(p);
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+    }
+
+    function printBlankLine() {
+        const p = document.createElement('p');
+        p.innerHTML = '&nbsp;'; // Non-breaking space to ensure line height
+        outputEl.appendChild(p);
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+        printState.onNewLine = true;
+    }
+
+    function clearScreen() {
+        outputEl.innerHTML = '';
+        createInputLine(); // Recreate input line after clearing
+    }
+
+    function showReady() {
+        print("READY.");
+        createInputLine();
+    }
+
+    function createInputLine(promptText = '') {
+        // Remove existing input line if it exists
+        if (inputLineEl && inputLineEl.parentElement) {
+            inputLineEl.remove();
+        }
+
+        inputLineEl = document.createElement('p');
+        promptEl = document.createElement('span');
+        promptEl.textContent = promptText;
+        inputBufferEl = document.createElement('span');
+        cursorEl = document.createElement('span');
+        cursorEl.className = 'cursor'; // Apply cursor blink animation
+
+        inputLineEl.appendChild(promptEl);
+        inputLineEl.appendChild(inputBufferEl);
+        inputLineEl.appendChild(cursorEl);
+        outputEl.appendChild(inputLineEl);
+
+        inputBuffer = ''; // Clear buffer for new input
+        if (inputBufferEl) inputBufferEl.textContent = '';
+        if (mobileInput) mobileInput.value = ''; // Clear mobile input too
+        terminalEl.scrollTop = terminalEl.scrollHeight; // Scroll to new input line
+
+        // Ensure the input line is visible
+        if (inputLineEl) {
+            inputLineEl.style.display = '';
+        }
+    }
+    
+    // Renders the simulated 40x25 character screen to the display
+    function drawScreen() {
+        // Clear all previous children from the output element to ensure a clean slate
+        while (outputEl.firstChild) {
+            outputEl.removeChild(outputEl.firstChild);
+        }
+        
+        // Ensure the input line is also removed/recreated if it was present
+        // This is crucial for programs that draw over the entire screen.
+        if (inputLineEl && inputLineEl.parentElement) {
+            inputLineEl.remove();
+        }
+
+        // Create a new pre-formatted element to hold the entire screen output.
+        // Using <pre> helps maintain the character grid without browser interference
+        // from paragraph margins or word wrapping.
+        const screenOutputPre = document.createElement('pre');
+        screenOutputPre.style.margin = '0'; // Remove default pre margins
+        screenOutputPre.style.whiteSpace = 'pre-wrap'; // Ensure wrapping is handled if needed
+        screenOutputPre.style.wordBreak = 'break-all'; // Break words if necessary to fit grid
+
+        let screenContent = '';
+        // Iterate through the 1000 character positions (40 columns * 25 rows)
+        for (let i = 0; i < 1000; i++) {
+            // Get the character from screen memory, default to space if not mapped
+            const char = PETSCII_MAP[screenMemory[i]] || ' ';
+            // Get the color from color memory, default to black if not found
+            const color = C64_PALETTE[colorMemory[i]];
+
+            // Append a styled span for each character to apply its specific color
+            screenContent += `<span style="color: ${color}">${char}</span>`;
+
+            // Add a newline character at the end of each row (every 40 characters)
+            // Ensure not to add an extra newline after the very last character
+            if ((i + 1) % 40 === 0 && i < 999) {
+                screenContent += '\n';
+            }
+        }
+        // Set the inner HTML of the pre element to the generated screen content
+        screenOutputPre.innerHTML = screenContent;
+        outputEl.appendChild(screenOutputPre); // Add the screen output to the display
+
+        // Crucially, reset printState when DRAW takes over the screen
+        printState.onNewLine = true; 
+
+        terminalEl.scrollTop = terminalEl.scrollHeight; // Scroll to ensure the screen is visible
+    }
+
+
+    // --- SECTION 4: BOOT & INPUT ---
+    function isTouchDevice() {
+        return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    }
+
+    function saveProgramToLocalStorage() {
+        try {
+            localStorage.setItem('c64_program', JSON.stringify(program));
+        } catch (e) {
+            console.error("Error saving to localStorage", e);
+        }
+    }
+
+    function loadProgramFromLocalStorage() {
+        const savedProgramJSON = localStorage.getItem('c64_program');
+        let programLoaded = false;
+        if (savedProgramJSON) {
+            try {
+                const savedProgram = JSON.parse(savedProgramJSON);
+                // Basic validation for loaded program structure
+                if (typeof savedProgram === 'object' && savedProgram !== null && !Array.isArray(savedProgram)) {
+                    program = savedProgram;
+                    programLoaded = Object.keys(program).length > 0;
+                }
+            } catch (e) {
+                // If parsing fails, reset program to empty
+                program = {};
+            }
+        }
+        return programLoaded;
+    }
+
+    // Adjusts viewport height for mobile devices when keyboard appears/disappears
+    function setupMobileViewport() {
+        if (!isTouchDevice() || !window.visualViewport) return;
+
+        const adjustLayout = () => {
+            crtContainer.style.height = `${window.visualViewport.height}px`;
+            terminalEl.scrollTop = terminalEl.scrollHeight;
+        };
+
+        window.visualViewport.addEventListener('resize', adjustLayout);
+        // Initial adjustment
+        adjustLayout();
+    }
+
+    function boot() {
+        outputEl.innerHTML = ''; // Clear terminal on boot
+        bootTime = Date.now(); // Reset boot time for TI/TI$ functions
+
+        // Initialize default memory values for border and screen colors
+        memory = { 53280: 14, 53281: 6 }; // 14=Light Blue border, 6=Dark Blue screen
+
+        // Apply initial colors to the CRT container and screen element
+        document.querySelector('.crt-container').style.backgroundColor = C64_PALETTE[memory[53280]];
+        document.getElementById('screen').style.backgroundColor = C64_PALETTE[memory[53281]];
+
+        const programLoaded = loadProgramFromLocalStorage();
+
+        printCentered("**** CHRISPIRILLO64 BASIC V27 ****");
+        printBlankLine();
+        printCentered("64K RAM SYSTEM  38911 BASIC BYTES FREE");
+        printBlankLine();
+
+        if (programLoaded) {
+            print("PREVIOUS SESSION RESTORED.");
+            // Removed listProgram() call here
+            printBlankLine();
+        }
+        showReady();
+
+        // Handle mobile input focusing and audio context
+        if (isTouchDevice()) {
+            mobileInput.focus();
+            document.getElementById('screen').addEventListener('click', () => {
+                // Resume audio context on user interaction for mobile
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                mobileInput.focus();
+            });
+        }
+        setupMobileViewport();
+    }
+
+    // Keyboard input handling for desktop
+    document.addEventListener('keydown', (e) => {
+        if (isTouchDevice()) return; // Skip if touch device, mobileInput handles it
+
+        if (e.key !== 'F11') e.preventDefault(); // Prevent default browser actions for most keys
+
+        // Capture key for GET command BEFORE other processing
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+            lastKeyPressed = e.key;
+        } else if (e.key === 'Backspace' || e.key === 'Enter') {
+            lastKeyPressed = ''; // Clear last key if it's a control key not meant for GET
+        } else {
+            lastKeyPressed = ''; // Clear for other keys like Shift, Alt, etc.
+        }
+
+        // Ctrl+C for breaking program execution
+        if (e.ctrlKey && e.key.toUpperCase() === 'C') {
+            if (isRunning) {
+                stopExecution = true;
+            }
+            return;
+        }
+
+        // Handle input when waiting for a program's INPUT command
+        if (isWaitingForInput) {
+            playKeyClick();
+            if (e.key === 'Enter') {
+                if (inputResolve) inputResolve(inputBuffer); // Resolve promise with input
+            } else if (e.key === 'Backspace') {
+                inputBuffer = inputBuffer.slice(0, -1);
+                inputBufferEl.textContent = inputBuffer;
+            } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { // Regular character input
+                inputBuffer += e.key;
+                inputBufferEl.textContent = inputBuffer;
+            }
+            return; // Don't process as general command input
+        }
+
+        // General command line input
+        playKeyClick(); // Play click sound for every key press
+        if(e.key === 'Enter') {
+            processCommand(inputBuffer);
+        } else if(e.key === 'Backspace') {
+            inputBuffer = inputBuffer.slice(0,-1);
+        } else if(e.key.length === 1) { // Only add single characters
+            inputBuffer += e.key;
+        }
+
+        // Update the displayed input buffer
+        if(inputBufferEl) inputBufferEl.textContent = inputBuffer;
+        terminalEl.scrollTop = terminalEl.scrollHeight; // Keep input in view
+    });
+
+    // Mobile input handling (using a hidden input field)
+    mobileInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent new line in mobile input
+            playKeyClick();
+            if (isWaitingForInput) {
+                if (inputResolve) {
+                    inputResolve(inputBuffer);
+                }
+            } else {
+                processCommand(inputBuffer);
+            }
+        }
+    });
+
+    mobileInput.addEventListener('input', (e) => {
+        // Capture key for GET command for mobile input (e.data property for input event)
+        if (e.data && e.data.length === 1) {
+            lastKeyPressed = e.data;
+        } else {
+            lastKeyPressed = '';
+        }
+
+        // Sync the internal buffer with the mobile input field's value
+        inputBuffer = mobileInput.value;
+        if (inputBufferEl) {
+            inputBufferEl.textContent = inputBuffer;
+        }
+        playKeyClick(); // Play click sound on input changes
+        terminalEl.scrollTop = terminalEl.scrollHeight;
+    });
+
+    // Break button functionality for touch devices
+    breakButton.addEventListener('click', () => {
+        if (isRunning) {
+            stopExecution = true;
+        }
+    });
+
+    // --- SECTION 5: COMMAND PARSER & DISPATCHER ---
+    function processCommand(cmd) {
+        // Replace the dynamic input line with static text after command submission
+        if (inputLineEl && inputLineEl.parentNode) {
+            const staticLine = document.createElement('p');
+            staticLine.textContent = promptEl.textContent + cmd;
+            inputLineEl.parentNode.replaceChild(staticLine, inputLineEl);
+        }
+
+        let trimmedCmd = cmd.trim();
+        inputBuffer = ""; // Clear input buffer
+
+        if (trimmedCmd === '') {
+            printBlankLine();
+            showReady();
+            return;
+        }
+
+        // Check if the command is a line number (for program entry)
+        const lineMatch = trimmedCmd.match(/^(\d+)(.*)/);
+        if (lineMatch) {
+            const lineNumber = parseInt(lineMatch[1], 10);
+            let statement = lineMatch[2].trim();
+            
+            // Allow '?' as shorthand for 'PRINT' in direct mode and program entry
+            if (statement.startsWith('?')) {
+                statement = 'PRINT' + statement.substring(1);
+            }
+
+            if (statement) {
+                program[lineNumber] = statement; // Store or update program line
+            } else {
+                delete program[lineNumber]; // Delete line if statement is empty
+            }
+            saveProgramToLocalStorage();
+            createInputLine(); // Create new input line
+        } else {
+            // If not a line number, execute as a direct command
+            if (trimmedCmd.startsWith('?')) {
+                trimmedCmd = 'PRINT' + trimmedCmd.substring(1);
+            }
+            executeDirectCommand(trimmedCmd);
+        }
+    }
+
+    // Executes a single command entered directly (not part of a program)
+    async function executeDirectCommand(cmd) {
+        printBlankLine(); // Add a blank line before output
+
+        try {
+            const parts = cmd.split(/\s+/);
+            const command = parts[0].toUpperCase();
+            const args = cmd.substring(command.length).trim();
+
+            switch (command) {
+                case 'LIST':
+                    listProgram();
+                    break;
+                case 'RUN':
+                    await runProgram(); // Run a program (asynchronous)
+                    return; // Return immediately, showReady will be called after runProgram
+                case 'SAVE':
+                    saveProgram();
+                    break;
+                case 'LOAD':
+                    await loadProgram(); // Load a program (asynchronous)
+                    break;
+                case 'NEW':
+                    program = {};
+                    variables = {};
+                    gosubStack = [];
+                    forLoopStack = [];
+                    saveProgramToLocalStorage();
+                    print("OK");
+                    break;
+                case 'CLS':
+                    clearScreen();
+                    return; // Return immediately, clearScreen already handles input line
+                case 'HELP':
+                case 'COMMAND': // Alias for HELP
+                case 'COMMANDS': // Alias for HELP
+                    handleHelp(args);
+                    break;
+                case 'DRAW': // Direct command to draw the screen
+                    drawScreen();
+                    break;
+                case 'DIM': // Allow DIM as direct command
+                    handleDim(args);
+                    break;
+                case 'POKE': // Allow POKE as direct command
+                    // Re-evaluate POKE for direct mode to ensure screen/border updates
+                    const pokeParams = args.split(',');
+                    if (pokeParams.length !== 2) throw new Error("SYNTAX ERROR");
+                    const address = evaluateExpression(pokeParams[0]);
+                    const value = evaluateExpression(pokeParams[1]);
+
+                    memory[address] = value; // Store in general memory map
+
+                    // Handle screen memory (1024-2023)
+                    if (address >= 1024 && address < 2024) {
+                        screenMemory[address - 1024] = value;
+                    }
+                    // Handle color memory (55296-56295)
+                    else if (address >= 55296 && address < 56296) {
+                        colorMemory[address - 55296] = value;
+                    }
+                    // Handle border and screen color POKEs (53280, 53281)
+                    else {
+                        const color = C64_PALETTE[value & 15]; // Mask to ensure color index is 0-15
+                        if (!color) throw new Error("ILLEGAL QUANTITY ERROR");
+                        if(address === 53280) crtContainer.style.backgroundColor = color;
+                        if(address === 53281) document.getElementById('screen').style.backgroundColor = color;
+                    }
+                    break;
+                default:
+                    // Attempt to run the statement as if it were a program line
+                    await runStatement(cmd, { isDirect: true });
+            }
+        }
+         catch (error) {
+            print(error.message, true); // Display error if command fails
+        }
+        showReady(); // Show READY prompt after command execution
+    }
+
+    // --- SECTION 6: BASIC INTERPRETER CORE ---
+    function listProgram() {
+        const lineNumbers = Object.keys(program).map(Number).sort((a, b) => a - b);
+        for (const line of lineNumbers) {
+            print(`${line} ${program[line]}`);
+        }
+    }
+
+    // Prompts user for input during program execution
+    function promptForInput(promptText) {
+        return new Promise(resolve => {
+            createInputLine(promptText);
+            isWaitingForInput = true;
+            inputResolve = (value) => {
+                isWaitingForInput = false;
+                inputResolve = null;
+                // Replace the dynamic input line with static text
+                if (inputLineEl) {
+                    const staticLine = document.createElement('p');
+                    staticLine.textContent = promptEl.textContent + value;
+                    inputLineEl.parentNode.replaceChild(staticLine, inputLineEl);
+                }
+                resolve(value);
+            };
+        });
+    }
+
+    // Main function to run a single BASIC statement
+    async function runStatement(statement, context) {
+        try {
+            const commandMatch = statement.match(/^([A-Z$]+)/i);
+            let command = commandMatch ? commandMatch[0].toUpperCase() : '';
+            let restOfLine = command ? statement.substring(command.length).trim() : statement;
+            
+            // Conditional (IF...THEN) statement
+            if (command === 'IF') {
+                const thenIndex = restOfLine.toUpperCase().indexOf(' THEN ');
+                if (thenIndex === -1) throw new Error("SYNTAX ERROR");
+                const condition = restOfLine.substring(0, thenIndex);
+                const action = restOfLine.substring(thenIndex + 6).trim();
+                if (evaluateExpression(condition)) {
+                    // If condition is true, execute the action part
+                    return await runStatement(action, context);
+                } else {
+                    // If false, skip the rest of this line
+                    return { pc: context.pc, skipLine: true };
+                }
+            }
+
+            // GOTO statement
+            if (command === 'GOTO') {
+                const targetLine = evaluateExpression(restOfLine);
+                const targetIndex = context.lineNumbers.findIndex(ln => ln === targetLine);
+                if (targetIndex === -1) throw new Error("UNDEF'D STATEMENT ERROR");
+                return { pc: targetIndex }; // Set program counter to target line
+            }
+
+            // GOSUB statement
+            if (command === 'GOSUB') {
+                const targetLine = evaluateExpression(restOfLine);
+                const targetIndex = context.lineNumbers.findIndex(ln => ln === targetLine);
+                if (targetIndex === -1) throw new Error("UNDEF'D STATEMENT ERROR");
+                gosubStack.push(context.pc); // Save current PC for RETURN
+                return { pc: targetIndex }; // Jump to subroutine
+            }
+
+            // RETURN statement
+            if (command === 'RETURN') {
+                if (gosubStack.length === 0) throw new Error("RETURN WITHOUT GOSUB ERROR");
+                return { pc: gosubStack.pop() + 1 }; // Return to next line after GOSUB
+            }
+
+            // FOR loop statement
+            if (command === 'FOR') {
+                const eqSplit = restOfLine.split('=');
+                const varName = eqSplit[0].trim().toUpperCase();
+                const toSplit = eqSplit[1].split(/\s+TO\s+/i);
+                const start = evaluateExpression(toSplit[0]);
+                const stepSplit = toSplit[1].split(/\s+STEP\s+/i);
+                const end = evaluateExpression(stepSplit[0]);
+                const step = stepSplit.length > 1 ? evaluateExpression(stepSplit[1]) : 1;
+                
+                variables[varName] = start; // Initialize loop variable
+                forLoopStack.push({ varName, end, step, pc: context.pc }); // Push loop state
+                return { pc: context.pc }; // Continue to next statement
+            }
+
+            // NEXT loop statement
+            if (command === 'NEXT') {
+                const varName = restOfLine.trim().toUpperCase(); // Optional variable name
+                if (forLoopStack.length === 0) throw new Error("NEXT WITHOUT FOR ERROR");
+                
+                const loop = forLoopStack[forLoopStack.length - 1]; // Get top loop from stack
+                if (varName && loop.varName !== varName) throw new Error("NEXT WITHOUT FOR ERROR");
+
+                variables[loop.varName] += loop.step; // Increment loop variable
+                
+                // Check if loop has finished
+                const finished = (loop.step > 0) ? variables[loop.varName] > loop.end : variables[loop.varName] < loop.end;
+
+                if (finished) {
+                    forLoopStack.pop(); // Pop loop from stack if finished
+                    return { pc: context.pc }; // Continue to next statement
+                } else {
+                    return { pc: loop.pc }; // Go back to the FOR line
+                }
+            }
+
+            // GET command
+            if (command === 'GET') {
+                const varName = restOfLine.trim().toUpperCase();
+                if (!varName.endsWith('$')) {
+                    throw new Error("TYPE MISMATCH ERROR (GET requires string variable)");
+                }
+                variables[varName] = lastKeyPressed; // Assign the last key pressed
+                lastKeyPressed = ''; // Consume the keypress
+                return { pc: context.pc };
+            }
+
+            // INPUT statement
+            if (command === 'INPUT') {
+                let promptText = "? ";
+                let varNamesStr = restOfLine;
+                // Correctly parse prompt: "PROMPT"; VAR or VAR
+                const promptMatch = restOfLine.match(/^"([^"]*)"\s*;\s*(.*)/); 
+                if (promptMatch) {
+                    promptText = promptMatch[1]; // Extract prompt text
+                    varNamesStr = promptMatch[2]; // Remaining part is variable
+                } else {
+                    // If no explicit prompt, the whole restOfLine is the variable part
+                    varNamesStr = restOfLine;
+                }
+
+                const varName = varNamesStr.trim().toUpperCase();
+                const userInput = await promptForInput(promptText);
+                
+                if (varName.endsWith('$')) {
+                    variables[varName] = userInput;
+                } else {
+                    const numValue = parseFloat(userInput);
+                    if (isNaN(numValue)) throw new Error("?REDO FROM START");
+                    variables[varName] = numValue;
+                }
+                return { pc: context.pc };
+            }
+
+            // DATA statement (skipped during execution, only parsed by runProgram)
+            if (command === 'DATA') { 
+                return { pc: context.pc }; 
+            }
+
+            // RESTORE statement
+            if (command === 'RESTORE') {
+                context.dataPointer = 0; // Reset data pointer
+                return { pc: context.pc, dataPointer: 0 }; // Update context's data pointer
+            }
+
+            // READ statement
+            if (command === 'READ') {
+                const vars = restOfLine.split(',').map(v => v.trim().toUpperCase());
+                for (const varName of vars) {
+                    if (context.dataPointer >= context.dataStore.length) throw new Error("OUT OF DATA ERROR");
+                    const dataValue = context.dataStore[context.dataPointer];
+                    
+                    // Assign data based on variable type
+                    if (varName.endsWith('$')) {
+                        variables[varName] = String(dataValue);
+                    } else {
+                        const numValue = parseFloat(dataValue);
+                        if(isNaN(numValue)) throw new Error("SYNTAX ERROR"); // Data must be numeric for numeric var
+                        variables[varName] = numValue;
+                    }
+                    context.dataPointer++; // Move to next data item
+                }
+                return { pc: context.c, dataPointer: context.dataPointer };
+            }
+
+            // POKE statement (write to memory)
+            if (command === 'POKE') {
+                const params = restOfLine.split(',');
+                if (params.length !== 2) throw new Error("SYNTAX ERROR");
+                const address = evaluateExpression(params[0]);
+                const value = evaluateExpression(params[1]);
+
+                memory[address] = value; // Store in general memory map
+
+                // Handle screen memory (1024-2023)
+                if (address >= 1024 && address < 2024) {
+                    screenMemory[address - 1024] = value;
+                }
+                // Handle color memory (55296-56295)
+                else if (address >= 55296 && address < 56296) {
+                    colorMemory[address - 55296] = value;
+                }
+                // Handle border and screen color POKEs (53280, 53281)
+                else {
+                    const color = C64_PALETTE[value & 15]; // Mask to ensure color index is 0-15
+                    if (!color) throw new Error("ILLEGAL QUANTITY ERROR");
+                    if(address === 53280) crtContainer.style.backgroundColor = color;
+                    if(address === 53281) document.getElementById('screen').style.backgroundColor = color;
+                }
+                return { pc: context.pc }; // Continue to next statement
+            }
+
+            // New DRAW command - render the screen
+            if (command === 'DRAW') {
+                drawScreen();
+                return { pc: context.pc };
+            }
+            
+            // Other commands
+            switch (command) {
+                case 'PRINT':
+                    handlePrint(restOfLine);
+                    break;
+                case 'DIM':
+                    handleDim(restOfLine);
+                    break;
+                case 'END':
+                    return { pc: Infinity }; // Special PC value to stop execution
+                case 'REM': // Remarks are ignored
+                    break; 
+                default: 
+                    // If no known command, try as an assignment
+                    if (statement.includes('=')) {
+                        evaluateAssignment(statement);
+                    } 
+                    else if (statement && command) { // If there's a command but it's not recognized
+                        throw new Error("SYNTAX ERROR");
+                    }
+            }
+        } catch (error) {
+            // If direct command, print error; otherwise, rethrow for program runner
+            if (context.isDirect) {
+                print(error.message, true);
+            } else {
+                throw error;
+            }
+        }
+        return { pc: context.pc + 1 }; // Default: continue to next statement in line
+    }
+    
+    // Executes the loaded BASIC program
+    async function runProgram() {
+        isRunning = true; // Set running flag
+        stopExecution = false; // Reset stop flag
+        if (isTouchDevice()) { breakButton.classList.add('visible'); } // Show break button for mobile
+        
+        // Hide the input line when a program starts running
+        if (inputLineEl && inputLineEl.parentElement) {
+            inputLineEl.style.display = 'none'; // Hide the entire input line
+        }
+
+        variables = {}; // Clear variables at start of run
+        gosubStack = []; // Clear GOSUB stack
+        forLoopStack = []; // Clear FOR loop stack
+
+        const lineNumbers = Object.keys(program).map(Number).sort((a, b) => a - b); // Sorted line numbers
+        
+        // Collect DATA statements before execution starts
+        const dataStore = [];
+        for (const lineNum of lineNumbers) {
+            const statement = program[lineNum];
+            const dataMatch = statement.match(/^\s*DATA\s+(.*)/i);
+            if (dataMatch) {
+                // Split data values by comma, handling quoted strings
+                const valuesRegex = /("([^"]*)"|[^,]+)/g;
+                const parsedValues = [...dataMatch[1].matchAll(valuesRegex)].map(match => {
+                    return match[2] !== undefined ? match[2] : match[1].trim();
+                });
+                dataStore.push(...parsedValues);
+            }
+        }
+        let dataPointer = 0; // Initialize data pointer
+
+        if (lineNumbers.length === 0) {
+            isRunning = false;
+            if (isTouchDevice()) breakButton.classList.remove('visible');
+            showReady();
+            return;
+        }
+
+        let pc = 0; // Program Counter (index into lineNumbers array)
+        let lastLineNumber = -1; // To report line number on BREAK
+
+        // Main program execution loop
+        while (pc < lineNumbers.length && !stopExecution) {
+            const currentLineNumber = lineNumbers[pc];
+            lastLineNumber = currentLineNumber; // Keep track for error reporting
+            const fullLineStatement = program[currentLineNumber];
+            const statements = fullLineStatement.split(':'); // Split multiple statements per line
+            let jumpOccurred = false; // Flag to indicate if PC was changed by GOTO/FOR/NEXT/GOSUB/RETURN
+
+            for (const statement of statements) {
+                if (stopExecution) {
+                    jumpOccurred = true;
+                    break; // Break from inner statement loop if stop requested
+                }
+                const trimmedStatement = statement.trim();
+                // Skip empty statements or REM (remark) lines
+                if (!trimmedStatement || trimmedStatement.toUpperCase().startsWith('REM')) {
+                    continue; // Use continue to process next statement on same line
+                }
+
+                // Pass dataStore and dataPointer to context for READ/RESTORE
+                const context = { pc, lineNumbers, isDirect: false, dataStore, dataPointer };
+                try {
+                    const result = await runStatement(trimmedStatement, context);
+                    if (result.skipLine) {
+                        jumpOccurred = true;
+                        break; // Skip rest of line if IF condition was false
+                    }
+                    if (result.pc !== context.pc) { // A jump occurred
+                        pc = result.pc;
+                        jumpOccurred = true;
+                        // If dataPointer was updated by RESTORE, use the updated value
+                        if (result.dataPointer !== undefined) dataPointer = result.dataPointer;
+                        break; // Break from inner statement loop to jump to new line
+                    }
+                    if (result.pc === Infinity) { // END command
+                        pc = Infinity;
+                        jumpOccurred = true;
+                        break;
+                    }
+                    // Update dataPointer if READ command updated it without a jump
+                    if (result.dataPointer !== undefined) dataPointer = result.dataPointer;
+                } catch (error) {
+                    print(`?${error.message} IN ${currentLineNumber}`, true);
+                    stopExecution = true; // Stop execution on error
+                    jumpOccurred = true; // Treat error as a jump to exit loop
+                    break;
+                }
+            }
+            
+            if (!jumpOccurred) {
+                pc++; // Move to next line if no jump occurred
+            }
+            
+            // Yield control back to browser periodically to prevent freezing UI
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        
+        // Handle program termination
+        if (stopExecution && pc < Infinity) {
+            print(`?BREAK IN ${lastLineNumber}`, true); // Indicate where program was stopped
+        }
+        isRunning = false; 
+        if (isTouchDevice()) { breakButton.classList.remove('visible'); }
+        // Always recreate the input line after program finishes or breaks
+        showReady(); 
+    };
+
+    // --- SECTION 7: EXPRESSION & ASSIGNMENT HANDLERS ---
+    
+    // Handles variable assignment (e.g., A=10, B$="HELLO")
+    function evaluateAssignment(statement) {
+        const parts = statement.split('=');
+        if (parts.length < 2) throw new Error("SYNTAX ERROR");
+
+        const varPart = parts[0].trim().toUpperCase(); // Variable name
+        const valueExpr = parts.slice(1).join('='); // The expression to evaluate
+        const value = evaluateExpression(valueExpr);
+
+        // Type checking for string vs. numeric variables
+        if (varPart.endsWith('$') && typeof value !== 'string') {
+            throw new Error('TYPE MISMATCH ERROR');
+        }
+        if (!varPart.endsWith('$') && typeof value !== 'number') {
+            throw new Error('TYPE MISMATCH ERROR');
+        }
+
+        // Handle array assignments (e.g., A(5)=10)
+        const arrayMatch = varPart.match(/^([A-Z])\s*\(\s*(\d+)\s*\)$/i);
+        if (arrayMatch) {
+            const arrayName = arrayMatch[1].toUpperCase();
+            const index = parseInt(arrayMatch[2], 10);
+            if (!variables[arrayName] || variables[arrayName].type !== 'array') {
+                throw new Error("BAD SUBSCRIPT ERROR"); // Array not dimensioned
+            }
+            if (index < 0 || index >= variables[arrayName].data.length) {
+                throw new Error("BAD SUBSCRIPT ERROR (INDEX OUT OF BOUNDS)");
+            }
+            variables[arrayName].data[index] = value;
+        } else {
+            variables[varPart] = value; // Store the assigned value
+        }
+    }
+
+    // Handles PRINT statements for proper concatenation and separators
+    function handlePrint(args) {
+        if (args.trim() === '') {
+            printBlankLine();
+            return;
+        }
+
+        let consolidatedOutputText = '';
+        let suppressFinalNewline = false;
+        let currentPos = 0;
+        let lastEvaluatedSegmentWasString = false; // To track if the previously evaluated segment was a string
+
+        while (currentPos < args.length) {
+            let segmentValue = '';
+            let segmentType = '';
+            let advanceBy = 0;
+
+            const remainingArgs = args.substring(currentPos).trimStart(); // Trim leading spaces for tokenizing from current position
+
+            if (remainingArgs.length === 0) {
+                // If there are only trailing spaces, break the loop
+                break;
+            }
+
+            // 1. Try to parse a quoted string literal
+            if (remainingArgs.startsWith('"')) {
+                const closingQuoteIndex = remainingArgs.indexOf('"', 1); // Find first closing quote after opening
+                if (closingQuoteIndex === -1) {
+                    throw new Error("SYNTAX ERROR (Unclosed string literal)");
+                }
+                segmentValue = remainingArgs.substring(1, closingQuoteIndex); // Get content inside quotes
+                segmentType = 'string_literal';
+                advanceBy = closingQuoteIndex + 1; // Move past the closing quote
+            }
+            // 2. Try to parse a separator (semicolon or comma)
+            else if (remainingArgs.startsWith(';')) {
+                segmentValue = ';';
+                segmentType = 'separator';
+                advanceBy = 1;
+            }
+            else if (remainingArgs.startsWith(',')) {
+                segmentValue = ',';
+                segmentType = 'separator';
+                advanceBy = 1;
+            }
+            // 3. Otherwise, it's an expression until the next separator or end of line
+            else {
+                // Find the next separator or quote to determine the end of this expression segment
+                const nextSeparatorOrQuoteIndex = remainingArgs.search(/[;,"]/);
+                if (nextSeparatorOrQuoteIndex !== -1) {
+                    segmentValue = remainingArgs.substring(0, nextSeparatorOrQuoteIndex).trim();
+                    advanceBy = nextSeparatorOrQuoteIndex; // Advance only to the separator/quote
+                } else {
+                    segmentValue = remainingArgs.trim();
+                    advanceBy = remainingArgs.length; // Advance to end of string
+                }
+                segmentType = 'expression';
+            }
+
+            // --- Process the extracted segment ---
+            let currentSegmentOutput = '';
+            let evaluatedSuccess = true; // Flag to track if evaluation was successful for this segment
+
+            if (segmentType === 'string_literal') {
+                // Special case for "{CLR}" token
+                if (segmentValue.toUpperCase() === "{CLR}") {
+                    currentSegmentOutput = String.fromCharCode(147); // C64 clear screen character
+                } else {
+                    currentSegmentOutput = segmentValue; // Use the raw unquoted string content
+                }
+            } else if (segmentType === 'expression') {
+                try {
+                    // Evaluate the expression part. It might be a variable, number, or function call.
+                    currentSegmentOutput = String(evaluateExpression(segmentValue));
+                } catch (e) {
+                    print(`?${e.message}`, true);
+                    stopExecution = true; // Stop program execution on error
+                    evaluatedSuccess = false;
+                }
+            }
+
+            if (!evaluatedSuccess) {
+                // If there was an error evaluating, stop processing this PRINT statement
+                return;
+            }
+
+            // Handle clear screen character (CHR$(147))
+            if (currentSegmentOutput === String.fromCharCode(147)) {
+                outputEl.innerHTML = ''; // Clear the actual display output
+                printState.onNewLine = true; // Reset print state for next line
+                consolidatedOutputText = ''; // Clear current line's accumulated text
+                suppressFinalNewline = false; // Clear newline suppression
+                lastSegmentWasExpression = false; // Clear for next segment
+                currentPos += advanceBy; // Advance position past the "{CLR}" segment
+                continue; // Move to the next segment in the original args string
+            }
+
+            // Handle concatenation based on segment type and previous state
+            if (segmentType === 'separator') {
+                if (segmentValue === ',') {
+                    // C64 tab stop behavior (every 10 columns)
+                    const currentLength = consolidatedOutputText.length;
+                    const nextTabStop = Math.ceil((currentLength + 1) / 10) * 10;
+                    consolidatedOutputText += ' '.repeat(nextTabStop - currentLength);
+                    suppressFinalNewline = true;
+                } else if (segmentValue === ';') {
+                    // Semicolon suppresses newline, no extra space
+                    suppressFinalNewline = true;
+                }
+                lastSegmentWasExpression = false; // Separator breaks implicit concatenation
+            } else { // segmentType is 'string_literal' or 'expression'
+                // For implicit concatenation: if there was a previous expression/literal
+                // and there were only spaces between them (handled by trimStart of remainingArgs),
+                // then they concatenate. No extra space is added here for implicit concat in C64.
+                consolidatedOutputText += currentSegmentOutput;
+                suppressFinalNewline = false; // An expression/literal itself doesn't suppress by default
+                lastSegmentWasExpression = true;
+            }
+
+            currentPos += args.substring(currentPos).indexOf(remainingArgs) + advanceBy; // Correctly advance currentPos for next iteration
+        }
+
+        // --- Final Output Rendering ---
+        if (printState.onNewLine) {
+            // If we are starting a new line, create a new paragraph element
+            const p = document.createElement('p');
+            p.textContent = consolidatedOutputText;
+            outputEl.appendChild(p);
+        } else {
+            // If not on a new line, append to the last existing paragraph element
+            let lastLine = outputEl.lastChild;
+            if (!lastLine || lastLine.tagName.toLowerCase() !== 'p') {
+                // Fallback: if last element is not a paragraph (e.g., after DRAW), create one
+                lastLine = document.createElement('p');
+                outputEl.appendChild(lastLine);
+            }
+            lastLine.textContent += consolidatedOutputText;
+        }
+
+        terminalEl.scrollTop = outputEl.scrollHeight; // Scroll to the bottom of the output
+
+        // Determine the printState for the *next* print statement.
+        // If the original arguments string ends with a ';' or ',' (after trimming trailing spaces),
+        // then the next print should continue on the same line. Otherwise, start a new line.
+        const originalTrimmedEnd = args.trimEnd();
+        printState.onNewLine = !(originalTrimmedEnd.endsWith(';') || originalTrimmedEnd.endsWith(','));
+    }
+
+
+    // Handles DIM statements for array declaration
+    function handleDim(args) {
+        const parts = args.split(',');
+        for (const part of parts) {
+            const match = part.trim().match(/^([A-Z][A-Z0-9]*\$?)\s*\(\s*(\d+)\s*\)$/i);
+            if (!match) throw new Error('SYNTAX ERROR');
+            
+            const varName = match[1].toUpperCase();
+            const size = parseInt(match[2], 10); // C64 arrays are 0-indexed up to size
+            
+            if (variables[varName] && variables[varName].type === 'array') {
+                throw new Error('REDIM\'D ARRAY ERROR'); // Cannot redimension an array
+            }
+            if (size < 0) throw new Error("ILLEGAL QUANTITY ERROR");
+
+            // Initialize array with zeros for numbers or empty strings for strings
+            const initialValue = varName.endsWith('$') ? '' : 0;
+            variables[varName] = { type: 'array', data: new Array(size + 1).fill(initialValue) };
+        }
+    }
+
+    // Helper to parse arguments within parentheses for functions (e.g., (A, B+C))
+    function parseFunctionArgs(argsContent) {
+        const args = [];
+        let level = 0; // Parenthesis nesting level
+        let lastCut = 0;
+        let inString = false; // Track if inside a string literal
+
+        for (let i = 0; i < argsContent.length; i++) {
+            const char = argsContent[i];
+            if (char === '"') {
+                inString = !inString;
+            } else if (!inString) { // Only process if not inside a string
+                if (char === '(') {
+                    level++;
+                } else if (char === ')') {
+                    level--;
+                } else if (char === ',' && level === 0) { // Split only at top-level commas
+                    args.push(argsContent.substring(lastCut, i).trim());
+                    lastCut = i + 1;
+                }
+            }
+        }
+        args.push(argsContent.substring(lastCut).trim()); // Add the last argument
+        return args;
+    }
+
+    // Helper to parse a function call (e.g., LEN("HI"))
+    function parseFunction(expr) {
+        // Match function name followed by parentheses
+        const match = expr.match(/^([A-Z][A-Z0-9$]*)\s*\((.*)\)$/i);
+        if (!match) return null; // Not a function call
+        
+        const func = match[1].toUpperCase();
+        const argsContent = match[2];
+        const args = parseFunctionArgs(argsContent);
+        return { func, args };
+    }
+
+
+    // Function to display help information
+    function handleHelp(topic) {
+        topic = topic.trim().toUpperCase(); // Normalize topic to uppercase
+        outputEl.innerHTML = ''; // Clear the screen before displaying help
+
+        if (topic) {
+            // Check if it's a command
+            const commandInfo = HELP_DATA.COMMANDS.find(item => item.cmd === topic);
+            if (commandInfo) {
+                print(commandInfo.detail);
+                return;
+            }
+
+            // Check if it's a function (handle both with and without $ suffix)
+            const functionInfo = HELP_DATA.FUNCTIONS[topic] || HELP_DATA.FUNCTIONS[topic + '$'];
+            if (functionInfo) {
+                print(functionInfo.desc);
+                if(functionInfo.example) print(`EXAMPLE: ${functionInfo.example}`);
+                return;
+            }
+
+            print("?TOPIC NOT FOUND ERROR"); // If topic not found
+        } else {
+            // No topic, list all commands and functions
+            print("--- COMMANDS ---");
+            HELP_DATA.COMMANDS.forEach(item => {
+                const commandLabel = item.cmd.padEnd(10, ' '); // Pad for alignment
+                print(`${commandLabel}  ${item.desc}`);
+            });
+            printBlankLine();
+
+            print("--- FUNCTIONS ---");
+            const functions = Object.keys(HELP_DATA.FUNCTIONS).sort(); // Alphabetize functions
+            const numColumns = 4; // Number of columns for function list
+            const colWidth = 9; // Width of each column
+
+            // Print functions in columns
+            const numRows = Math.ceil(functions.length / numColumns);
+            for (let i = 0; i < numRows; i++) {
+                let line = "";
+                for (let j = 0; j < numColumns; j++) {
+                    const index = i + j * numRows;
+                    if (index < functions.length) {
+                        line += functions[index].padEnd(colWidth, ' ');
+                    }
+                }
+                print(line);
+            }
+        }
+    }
+
+
+    // --- SECTION 8: FILE I/O ---
+    function saveProgram() {
+        print("SAVING PROGRAM...");
+        const programString = JSON.stringify(program, null, 2); // Pretty print JSON
+        const blob = new Blob([programString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob); // Create a URL for the blob
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `program-${Date.now()}.json`; // Suggest a filename with timestamp
+        document.body.appendChild(a);
+        a.click(); // Programmatically click the link to trigger download
+        document.body.removeChild(a); // Clean up the element
+        URL.revokeObjectURL(url); // Release the object URL
+    }
+
+    // Loads a program from a user-selected JSON file
+    async function loadProgram() {
+        print("SEARCHING FOR PROGRAM...");
+        return new Promise(resolve => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json,application/json'; // Only accept JSON files
+
+            let fileSelected = false; // Flag to track if a file was selected
+
+            // Event listener for when a file is chosen
+            input.onchange = e => {
+                fileSelected = true;
+                window.removeEventListener('focus', focusHandler); // Remove focus listener once file selected
+
+                const file = e.target.files[0];
+                if (!file) {
+                    print("CANCELLED.");
+                    resolve(); // Resolve if no file was selected (e.g., dialog closed)
+                    return;
+                }
+
+                printBlankLine();
+                print("LOADING...");
+                const reader = new FileReader();
+
+                reader.onload = readerEvent => {
+                    try {
+                        const loadedProgram = JSON.parse(readerEvent.target.result);
+                        // Basic validation: must be an object, not null, not an array
+                        if (typeof loadedProgram !== 'object' || loadedProgram === null || Array.isArray(loadedProgram)) {
+                            throw new Error("INVALID FILE FORMAT");
+                        }
+                        program = loadedProgram; // Set the global program variable
+                        saveProgramToLocalStorage(); // Save to local storage for persistence
+                        print("PROGRAM LOADED.");
+                    } catch (err) {
+                        print("?FILE LOAD ERROR: " + err.message, true);
+                    }
+                    resolve(); // Resolve promise after loading/error handling
+                };
+                reader.readAsText(file); // Read the file content as text
+            };
+
+            // Fallback for when the file dialog is opened but then cancelled by the user
+            const focusHandler = () => {
+                setTimeout(() => {
+                    if (!fileSelected) {
+                        window.removeEventListener('focus', focusHandler);
+                        print("CANCELLED.");
+                        resolve(); // Resolve promise if no file was selected after focus returns
+                    }
+                }, 300); // Small delay to allow file dialog to appear
+            };
+
+            window.addEventListener('focus', focusHandler, { once: true }); // Listen for focus return (dialog close)
+            input.click(); // Programmatically open the file dialog
+        });
+    }
+    
+    // --- Start the machine ---
+    boot();
+    </script>
+</body>
+</html>
